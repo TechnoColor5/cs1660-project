@@ -7,7 +7,7 @@
 
 ## How to run
 1. `docker build --tag <insert tag> .`
-2. `docker run -it --privileged -e DISPLAY=<IP>:0 -v /tmp/.X11-unix:/tmp/.X11-unix <tag>:latest` (replace <IP> with your IP)
+2. `docker run -it --privileged -e DISPLAY=<IP>:0 -v /tmp/.X11-unix:/tmp/.X11-unix <tag>:latest` (replace `<IP>` with your IP)
 3. Select the author whose works you want to run an Inverted Index job on
 4. Press Go
 5. Wait for the job to finish
