@@ -4,6 +4,8 @@
 * First Java Application Implementation and Execution on Docker
 * Docker to Local (or GCP) Cluster Communication
 * Inverted Indexing MapReduce Implementation and Execution on the Cluster (GCP)
+Here is a screenshot of what the application looks like:
+![](./screen.png)
 
 ## How to run
 1. `docker build --tag <insert tag> .`
