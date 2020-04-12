@@ -28,47 +28,6 @@ public class InvertedIndexJob {
 		FileOutputFormat.setOutputPath(job, outputPath);
 
 		job.waitForCompletion(true);
-
-		//makeShellScript();
-		//runShellScript();
-	}
-
-	public static void runShellScript() {
-		System.out.println("running script....");
-		Process p;
-		try {
-			String[] cmd = { "sh", "./merge.sh", "> script.txt"};
-			p = Runtime.getRuntime().exec(cmd); 
-			int value = p.waitFor();
-			System.out.println("Script returned: " + value);
-			File file = new File("script.txt");
-			System.out.println("output file exists: " + file.exists());
-			Scanner scanner = new Scanner(file);
-			while (scanner.hasNextLine()) {
-				System.out.println(scanner.nextLine());
-			}
-		} catch (Exception e) {
-			System.out.println(e);
-			e.printStackTrace();
-		}
-	}
-
-	public static void makeShellScript() throws IOException {
-		File file = new File("merge.sh");
-		FileWriter writer = new FileWriter(file);
-		writer.write("gsutil rm gs://dataproc-staging-us-west1-196681246404-tl4catln/output.txt\n");
-		writer.write("gsutil rm gs://dataproc-staging-us-west1-196681246404-tl4catln/output/_SUCCESS\n");
-		//writer.close();
-		//file = new File("hadoop.sh");
-		//writer = new FileWriter(file);
-		writer.write("hadoop fs -getmerge gs://dataproc-staging-us-west1-196681246404-tl4catln/output ./output.txt\n");
-		writer.write("hadoop fs -copyFromLocal ./output.txt\n");
-		writer.write("hadoop fs -cp ./output.txt gs://dataproc-staging-us-west1-196681246404-tl4catln/output.txt\n");
-		writer.write("hadoop fs -rm ./output.txt\n");
-		writer.write("gsutil rm -r gs://dataproc-staging-us-west1-196681246404-tl4catln/output\n");
-		writer.close();
-
-		System.out.println("File exists? " + file.exists());
 	}
 
 	static class InvertedIndexMapper extends Mapper<LongWritable, Text, Text, Text> {
@@ -82,7 +41,7 @@ public class InvertedIndexJob {
 		{
 			/*Get the name of the file using context.getInputSplit()method*/
 			String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-			String line=value.toString();
+			String line = value.toString();
 
 			//Split the line in words
 			String words[]=line.split(" ");
@@ -92,6 +51,7 @@ public class InvertedIndexJob {
 				//Get rid of punctuation
 				word.set(tokenizer.nextToken().replaceAll("[^a-zA-Z]", "").toLowerCase());
 
+				//Write out <Term, Filename> pairs
 				context.write(word, new Text(fileName));
 			}
 			}
@@ -103,7 +63,9 @@ public class InvertedIndexJob {
 
 		public void reduce(Text key, Iterable<Text> values, Context context)
 				throws IOException, InterruptedException {
+			//Holds <term/filename, count> pairs
 			HashMap m=new HashMap();
+
 			int count=0;
 			for(Text t:values){
 				String str=t.toString();
@@ -115,6 +77,7 @@ public class InvertedIndexJob {
 					m.put(str, 1);
 				}
 			}
+			//Writes the HashMap
 			context.write(key, new Text(m.toString()));
 		}
 	}
